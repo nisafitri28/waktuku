@@ -1,11 +1,584 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Waktuku - Pengatur Jadwal Mahasiswa</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --pastel-pink: #FFD6E8;
+            --pastel-blue: #C9E4FF;
+            --pastel-purple: #E5D4FF;
+            --pastel-green: #D4FFEA;
+            --pastel-yellow: #FFF4D4;
+            --text-dark: #5A5A5A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-pink) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        .auth-container {
+            max-width: 450px;
+            margin: 50px auto;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        .app-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-pastel {
+            border-radius: 10px;
+            padding: 10px 25px;
+            border: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: var(--pastel-green);
+            color: var(--text-dark);
+        }
+
+        .btn-add:hover {
+            background: #B8FFD9;
+            transform: scale(1.05);
+        }
+
+        .btn-delete {
+            background: var(--pastel-pink);
+            color: var(--text-dark);
+        }
+
+        .btn-delete:hover {
+            background: #FFB8D8;
+        }
+
+        .btn-primary-custom {
+            background: var(--pastel-purple);
+            color: var(--text-dark);
+        }
+
+        .btn-primary-custom:hover {
+            background: #D4BFFF;
+            color: var(--text-dark);
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #E8E8E8;
+            padding: 12px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--pastel-purple);
+            box-shadow: 0 0 0 0.2rem rgba(229, 212, 255, 0.5);
+        }
+
+        .badge-type {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .type-kuliah { background: var(--pastel-blue); }
+        .type-kelompok { background: var(--pastel-green); }
+        .type-kerja { background: var(--pastel-yellow); }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .notification-badge {
+            position: relative;
+            display: inline-block;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FF6B6B;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 576px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+            
+            .schedule-card {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Nisa Fitriyani</h1>
+    <!-- Login Page -->
+    <div id="loginPage" class="auth-container">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <div class="logo">Waktuku</div>
+                <p class="text-muted">Atur jadwalmu dengan mudah</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Ingat Saya</label>
+                </div>
+                <button type="submit" class="btn btn-primary-custom btn-pastel w-100 mb-3">Login</button>
+                <div class="text-center">
+                    <span class="text-muted">Belum punya akun? </span>
+                    <a href="#" id="showRegister" class="text-decoration-none fw-bold">Daftar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="registerPage" class="auth-container" style="display:none;">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <div class="logo">Waktuku</div>
+                <p class="text-muted">Buat akun baru</p>
+            </div>
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-control" id="registerName" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="registerEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="registerPassword" required minlength="6">
+                    <small class="text-muted">Minimal 6 karakter</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Konfirmasi Password</label>
+                    <input type="password" class="form-control" id="registerPasswordConfirm" required>
+                </div>
+                <button type="submit" class="btn btn-primary-custom btn-pastel w-100 mb-3">Daftar</button>
+                <div class="text-center">
+                    <span class="text-muted">Sudah punya akun? </span>
+                    <a href="#" id="showLogin" class="text-decoration-none fw-bold">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appPage" style="display:none;">
+        <div class="app-container">
+            <!-- Header -->
+            <div class="app-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="logo d-inline">Waktuku</div>
+                        <p class="mb-0 mt-2">Halo, <span id="userName"></span>! 👋</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-pastel btn-delete" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Schedule Form -->
+            <div class="schedule-card">
+                <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Tambah Jadwal Baru</h5>
+                <form id="scheduleForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Kegiatan</label>
+                            <input type="text" class="form-control" id="activityName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe</label>
+                            <select class="form-select" id="activityType" required>
+                                <option value="kuliah">Kuliah</option>
+                                <option value="kelompok">Kerja Kelompok</option>
+                                <option value="kerja">Kerja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal</label>
+                            <input type="date" class="form-control" id="activityDate" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Waktu</label>
+                            <input type="time" class="form-control" id="activityTime" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Catatan (Opsional)</label>
+                            <textarea class="form-control" id="activityNotes" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-add btn-pastel">
+                                <i class="fas fa-check"></i> Tambah Jadwal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Notifications -->
+            <div id="notificationArea" class="schedule-card" style="display:none;">
+                <h5 class="mb-3">
+                    <span class="notification-badge">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count" id="notifCount">0</span>
+                    </span>
+                    Pengingat Hari Ini
+                </h5>
+                <div id="todaySchedules"></div>
+            </div>
+
+            <!-- Schedule List -->
+            <div class="schedule-card">
+                <h5 class="mb-3"><i class="fas fa-calendar-alt"></i> Daftar Jadwal</h5>
+                <div id="scheduleList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple encryption function
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString(36);
+        }
+
+        // Check if user is logged in
+        function checkAuth() {
+            const session = sessionStorage.getItem('currentUser');
+            const remember = localStorage.getItem('rememberedUser');
+            
+            if (session || remember) {
+                const user = JSON.parse(session || remember);
+                showApp(user);
+                return true;
+            }
+            return false;
+        }
+
+        // Show/Hide pages
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('appPage').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('registerPage').style.display = 'block';
+            document.getElementById('appPage').style.display = 'none';
+        }
+
+        function showApp(user) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('appPage').style.display = 'block';
+            document.getElementById('userName').textContent = user.name;
+            loadSchedules();
+            checkTodaySchedules();
+        }
+
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerPasswordConfirm').value;
+
+            if (password.length < 6) {
+                alert('Password harus minimal 6 karakter!');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Password tidak cocok!');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.find(u => u.email === email)) {
+                alert('Email sudah terdaftar!');
+                return;
+            }
+
+            users.push({
+                name: name,
+                email: email,
+                password: simpleHash(password)
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Registrasi berhasil! Silakan login.');
+            showLogin();
+            this.reset();
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const remember = document.getElementById('rememberMe').checked;
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === simpleHash(password));
+
+            if (user) {
+                const userData = { name: user.name, email: user.email };
+                sessionStorage.setItem('currentUser', JSON.stringify(userData));
+                
+                if (remember) {
+                    localStorage.setItem('rememberedUser', JSON.stringify(userData));
+                }
+                
+                showApp(userData);
+                this.reset();
+            } else {
+                alert('Email atau password salah!');
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            sessionStorage.removeItem('currentUser');
+            localStorage.removeItem('rememberedUser');
+            showLogin();
+        });
+
+        // Toggle between login and register
+        document.getElementById('showRegister').addEventListener('click', function(e) {
+            e.preventDefault();
+            showRegister();
+        });
+
+        document.getElementById('showLogin').addEventListener('click', function(e) {
+            e.preventDefault();
+            showLogin();
+        });
+
+        // Schedule Management
+        function getSchedules() {
+            const user = JSON.parse(sessionStorage.getItem('currentUser') || localStorage.getItem('rememberedUser'));
+            const key = `schedules_${user.email}`;
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function saveSchedules(schedules) {
+            const user = JSON.parse(sessionStorage.getItem('currentUser') || localStorage.getItem('rememberedUser'));
+            const key = `schedules_${user.email}`;
+            localStorage.setItem(key, JSON.stringify(schedules));
+        }
+
+        // Add Schedule
+        document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const schedule = {
+                id: Date.now(),
+                name: document.getElementById('activityName').value,
+                type: document.getElementById('activityType').value,
+                date: document.getElementById('activityDate').value,
+                time: document.getElementById('activityTime').value,
+                notes: document.getElementById('activityNotes').value
+            };
+
+            const schedules = getSchedules();
+            schedules.push(schedule);
+            saveSchedules(schedules);
+            
+            this.reset();
+            loadSchedules();
+            checkTodaySchedules();
+            alert('Jadwal berhasil ditambahkan!');
+        });
+
+        // Load Schedules
+        function loadSchedules() {
+            const schedules = getSchedules();
+            const container = document.getElementById('scheduleList');
+            
+            if (schedules.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Belum ada jadwal. Tambahkan jadwal pertamamu!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            schedules.sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + a.time);
+                const dateB = new Date(b.date + ' ' + b.time);
+                return dateA - dateB;
+            });
+
+            container.innerHTML = schedules.map(s => `
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2">${s.name}</h6>
+                                    <span class="badge badge-type type-${s.type}">${s.type.charAt(0).toUpperCase() + s.type.slice(1)}</span>
+                                </div>
+                                <p class="mb-1 text-muted">
+                                    <i class="fas fa-calendar"></i> ${formatDate(s.date)} | 
+                                    <i class="fas fa-clock"></i> ${s.time}
+                                </p>
+                                ${s.notes ? `<p class="mb-0 small text-muted"><i class="fas fa-sticky-note"></i> ${s.notes}</p>` : ''}
+                            </div>
+                            <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                                <button class="btn btn-delete btn-pastel btn-sm" onclick="deleteSchedule(${s.id})">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete Schedule
+        function deleteSchedule(id) {
+            if (confirm('Yakin ingin menghapus jadwal ini?')) {
+                let schedules = getSchedules();
+                schedules = schedules.filter(s => s.id !== id);
+                saveSchedules(schedules);
+                loadSchedules();
+                checkTodaySchedules();
+            }
+        }
+
+        // Check Today's Schedules
+        function checkTodaySchedules() {
+            const schedules = getSchedules();
+            const today = new Date().toISOString().split('T')[0];
+            const todaySchedules = schedules.filter(s => s.date === today);
+            
+            const notifArea = document.getElementById('notificationArea');
+            const container = document.getElementById('todaySchedules');
+            const countBadge = document.getElementById('notifCount');
+            
+            if (todaySchedules.length > 0) {
+                notifArea.style.display = 'block';
+                countBadge.textContent = todaySchedules.length;
+                
+                container.innerHTML = todaySchedules.map(s => `
+                    <div class="alert alert-info mb-2">
+                        <strong><i class="fas fa-clock"></i> ${s.time}</strong> - ${s.name}
+                        <span class="badge badge-type type-${s.type} ms-2">${s.type}</span>
+                    </div>
+                `).join('');
+            } else {
+                notifArea.style.display = 'none';
+            }
+        }
+
+        // Format Date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        // Initialize
+        if (!checkAuth()) {
+            showLogin();
+        }
+
+        // Set min date to today
+        document.getElementById('activityDate').min = new Date().toISOString().split('T')[0];
+    </script>
 </body>
 </html>
